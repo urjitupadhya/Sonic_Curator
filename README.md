@@ -74,6 +74,3 @@ Deploy to Railway:
 - `POST /api/transcribe` - Upload audio and get transcription
 - `GET /api/transcripts` - Get all transcripts for logged-in user
 
-## License
-
-MIT
