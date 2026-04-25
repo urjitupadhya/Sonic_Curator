@@ -1,14 +1,13 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = process.env.GEMINI_API_KEY;
-
-if (!apiKey) {
-  throw new Error("GEMINI_API_KEY is missing from .env file");
-}
-
-const genAI = new GoogleGenerativeAI(apiKey);
-
 export async function transcribeAudio(fileBuffer: Buffer, mimeType: string) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is missing from .env file");
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
   const models = [
     "gemini-2.0-flash",
     "gemini-2.5-flash",
