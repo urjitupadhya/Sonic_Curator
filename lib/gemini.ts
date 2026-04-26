@@ -10,7 +10,8 @@ export async function transcribeAudio(fileBuffer: Buffer, mimeType: string) {
   const genAI = new GoogleGenerativeAI(apiKey);
   
   // List of models to try in order of preference
-  const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"];
+  // gemini-2.0-flash is deprecated; try 2.5-flash which has fresh quota
+  const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash"];
   let lastError = null;
 
   for (const modelName of modelsToTry) {
