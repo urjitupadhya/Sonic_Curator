@@ -2,20 +2,18 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies separately for better caching
+# 1. Install dependencies first (for faster builds)
 COPY package*.json ./
 RUN npm install
 
-# Copy the rest of the application
+# 2. COPY THE ACTUAL CODE (This was being skipped or misplaced!)
 COPY . .
 
-# Set environment to production
+# 3. Environment settings
 ENV NODE_ENV=production
-
-# Disable Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build the application
+# 4. Build the app
 RUN npm run build
 
 EXPOSE 3000
