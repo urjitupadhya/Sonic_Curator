@@ -1,23 +1,21 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function transcribeAudio(fileBuffer: Buffer, mimeType: string) {
-  // We only check for the API key when this function is actually called
   const apiKey = process.env.GEMINI_API_KEY;
   
   if (!apiKey) {
-    console.error("❌ GEMINI_API_KEY is missing from environment variables.");
-    throw new Error("Gemini API Key not configured.");
+    throw new Error("GEMINI_API_KEY is not configured in environment variables.");
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-
-  // Prioritize Gemini 2.0 Flash
-  const modelsToTry = ["gemini-2.0-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"];
+  
+  // List of models to try in order of preference
+  const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"];
   let lastError = null;
 
   for (const modelName of modelsToTry) {
     try {
-      console.log(`📡 Sending to Gemini (${modelName})...`);
+      console.log(`📡 Attempting transcription with ${modelName}...`);
       const model = genAI.getGenerativeModel({ model: modelName });
 
       const result = await model.generateContent([
@@ -34,14 +32,20 @@ export async function transcribeAudio(fileBuffer: Buffer, mimeType: string) {
       const text = response.text();
       
       if (text) {
-        console.log(`✅ Success with ${modelName}!`);
+        console.log(`✅ Transcription complete using ${modelName}!`);
         return text;
       }
-    } catch (err: any) {
-      console.error(`❌ ${modelName} failed:`, err.message);
-      lastError = err;
+    } catch (error: any) {
+      lastError = error;
+      console.warn(`⚠️ ${modelName} failed: ${error.message}`);
+      // If it's a quota error, we definitely want to try the next model
+      if (error.message?.includes("429") || error.message?.includes("quota")) {
+        continue;
+      }
+      // For other errors, maybe try next model too
+      continue;
     }
   }
 
-  throw new Error(`All Gemini models failed. Last error: ${lastError?.message}`);
+  throw new Error(`All models failed. Last error: ${lastError?.message}`);
 }
