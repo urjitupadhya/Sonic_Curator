@@ -1,6 +1,4 @@
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { transcripts } from "@/db/schema";
 import { transcribeAudio } from "@/lib/gemini";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -35,10 +33,9 @@ export async function POST(req: NextRequest) {
       transcriptText = await transcribeAudio(buffer, file.type);
     } catch (geminiError: any) {
       console.error("Gemini API Error:", geminiError);
-      const errorMsg = geminiError.message || "AI Transcription failed";
       return NextResponse.json({
-        error: errorMsg,
-        details: errorMsg,
+        error: "AI Transcription failed.",
+        details: geminiError.message,
       }, { status: 500 });
     }
 
@@ -46,16 +43,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Gemini returned an empty transcript." }, { status: 500 });
     }
 
-    // Insert directly using pg (bypass drizzle for auth user_id)
     const { Pool } = await import("pg");
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
     });
 
+    const transcriptId = Math.random().toString(36).substring(2, 15);
     const result = await pool.query(
-      `INSERT INTO transcript (id, "userId", "fileName", content, "createdAt") VALUES (gen_random_uuid(), $1, $2, $3, NOW()) RETURNING *`,
-      [session.user.id, file.name, transcriptText]
+      `INSERT INTO transcript (id, "userId", "fileName", content) VALUES ($1, $2, $3, $4) RETURNING *`,
+      [transcriptId, session.user.id, file.name, transcriptText]
     );
     await pool.end();
 
