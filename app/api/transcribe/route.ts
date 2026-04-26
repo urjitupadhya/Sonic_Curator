@@ -21,10 +21,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    if (file.size > 20 * 1024 * 1024) {
-      return NextResponse.json({ error: "File too large (Max 20MB)" }, { status: 400 });
-    }
-
     const buffer = Buffer.from(await file.arrayBuffer());
     let transcriptText;
 
