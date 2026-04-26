@@ -16,5 +16,10 @@ export const auth = betterAuth({
     enabled: true,
   },
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-  trustedOrigins: [process.env.BETTER_AUTH_URL || "http://localhost:3000"],
+  trustedOrigins: [
+    process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    "https://sonic-curator-six.vercel.app",
+    "https://sonic-curator-git-master-urjit-upadhyays-projects.vercel.app",
+    "http://localhost:3000",
+  ],
 });
