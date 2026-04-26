@@ -4,6 +4,8 @@ import { transcripts } from "@/db/schema";
 import { transcribeAudio } from "@/lib/gemini";
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   const session = await auth.api.getSession({
     headers: req.headers,

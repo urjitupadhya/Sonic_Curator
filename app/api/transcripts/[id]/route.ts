@@ -7,6 +7,8 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }

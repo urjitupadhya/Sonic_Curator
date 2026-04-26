@@ -1,10 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function transcribeAudio(fileBuffer: Buffer, mimeType: string) {
+  // We only check for the API key when this function is actually called
   const apiKey = process.env.GEMINI_API_KEY;
   
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is missing. Please set it in your environment variables.");
+    console.error("❌ GEMINI_API_KEY is missing from environment variables.");
+    throw new Error("Gemini API Key not configured.");
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
@@ -38,10 +40,6 @@ export async function transcribeAudio(fileBuffer: Buffer, mimeType: string) {
     } catch (err: any) {
       console.error(`❌ ${modelName} failed:`, err.message);
       lastError = err;
-      
-      if (err.message?.includes("403")) {
-        throw new Error("Gemini API Key Permission Denied (403). Please ensure Gemini 2.0 is enabled in your AI Studio.");
-      }
     }
   }
 
