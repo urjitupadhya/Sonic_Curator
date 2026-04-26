@@ -4,18 +4,16 @@ export async function transcribeAudio(fileBuffer: Buffer, mimeType: string) {
   const apiKey = process.env.GEMINI_API_KEY;
   
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is missing from .env file");
+    throw new Error("GEMINI_API_KEY is missing. Please set it in your environment variables.");
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const models = [
-    "gemini-2.0-flash",
-    "gemini-2.5-flash",
-    "gemini-1.5-flash",
-  ];
-  let lastError: Error | null = null;
 
-  for (const modelName of models) {
+  // Prioritize Gemini 2.0 Flash
+  const modelsToTry = ["gemini-2.0-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"];
+  let lastError = null;
+
+  for (const modelName of modelsToTry) {
     try {
       console.log(`📡 Sending to Gemini (${modelName})...`);
       const model = genAI.getGenerativeModel({ model: modelName });
@@ -41,14 +39,8 @@ export async function transcribeAudio(fileBuffer: Buffer, mimeType: string) {
       console.error(`❌ ${modelName} failed:`, err.message);
       lastError = err;
       
-      if (err.message?.includes("429") || err.message?.includes("quota")) {
-        console.log(`⏳ Quota exceeded for ${modelName}, trying next...`);
-        continue;
-      }
-      
-      if (err.message?.includes("404") || err.message?.includes("not found")) {
-        console.log(`Model ${modelName} not available, trying next...`);
-        continue;
+      if (err.message?.includes("403")) {
+        throw new Error("Gemini API Key Permission Denied (403). Please ensure Gemini 2.0 is enabled in your AI Studio.");
       }
     }
   }
